@@ -59,6 +59,13 @@ XEDITABLE_FIELD_TYPES = {
     'ForeignKey': 'select',
 }
 
+def get_field_by_name(model, name):
+    """Compatible with Django 1.10 and with the old Options API."""
+    if hasattr(model._meta, "get_field"):
+        return model._meta.get_field(name)
+    else:
+        return model._meta.get_field_by_name(name)[0]
+
 def resolve_orm_path(model, orm_path):
     """
     Follows the queryset-style query path of ``orm_path`` starting from ``model`` class.  If the
@@ -72,7 +79,7 @@ def resolve_orm_path(model, orm_path):
     if bits[-1] == 'pk':
         field = endpoint_model._meta.pk
     else:
-        field, _, _, _ = endpoint_model._meta.get_field_by_name(bits[-1])
+        field = get_field_by_name(endpoint_model, bits[-1])
     return field
 
 def get_model_at_related_field(model, attr):
